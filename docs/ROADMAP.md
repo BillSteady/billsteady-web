@@ -6,11 +6,13 @@ This repo (billsteady-web) owns Phase 0's frontend. Backend work (Phase 0.4+,
 1, 2) lives in [billsteady-backend](https://github.com/bytescape30/billsteady-backend).
 Contract work (Phase 3) lives in [billsteady-contracts](https://github.com/bytescape30/billsteady-contracts).
 
-## Phase 0 — real app (done, frontend half)
-- React + Vite + TS + Tailwind PWA
+## Phase 0 — real app (frontend half: done, feature-complete)
+- React + Vite + TS + Tailwind PWA, installable with real icons
 - planner.ts: paydays (weekly/biweekly/monthly), running-balance projection,
-  shortfall warnings, daily set-aside, 19 passing Vitest tests
+  shortfall warnings, daily set-aside, 30 passing Vitest tests
 - Planner / Bills / Ask-for-time screens, mobile-first, naira-first copy
+- Monthly and one-off bills, partial-payment recording, bill editing
+- A real design pass (hierarchy, empty states, tabular-nums, tap feedback)
 - State is local-only (localStorage) — no backend wired up yet
 
 ## Phase 0 remaining (blocked on accounts, not code — tracked in billsteady-backend)

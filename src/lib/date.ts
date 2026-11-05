@@ -3,6 +3,23 @@
 
 export type IsoDate = string;
 
+/**
+ * Today's date in the viewer's own calendar, as yyyy-mm-dd.
+ *
+ * Deliberately NOT `new Date().toISOString().slice(0, 10)`: that reads the
+ * UTC calendar date, which is wrong for most of the day for anyone west of
+ * UTC (and briefly wrong east of it too) - e.g. 8pm in Lagos (UTC+1) is
+ * already past midnight UTC, so toISOString() would report tomorrow. Money
+ * math (shortfall warnings, "due today", daily set-aside) depends on this
+ * being the user's actual today.
+ */
+export function todayIso(d: Date = new Date()): IsoDate {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 interface Ymd {
   y: number;
   m: number; // 1-12
