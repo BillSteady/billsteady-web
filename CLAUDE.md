@@ -6,8 +6,8 @@ ever. BillSteady never holds user funds or private keys.
 
 This repo is one of three:
 - **billsteady-web** (this repo): the planner PWA
-- [billsteady-backend](https://github.com/bytescape30/billsteady-backend): Supabase (Postgres, Auth, Edge Functions)
-- [billsteady-contracts](https://github.com/bytescape30/billsteady-contracts): the Soroban jar contract (Rust)
+- [billsteady-backend](https://github.com/BillSteady/billsteady-backend): Supabase (Postgres, Auth, Edge Functions)
+- [billsteady-contracts](https://github.com/BillSteady/billsteady-contracts): the Soroban jar contract (Rust)
 
 ## Stack
 - React + Vite + TypeScript PWA, Tailwind

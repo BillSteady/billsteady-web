@@ -3,8 +3,8 @@
 Source of truth: `BillSteady-on-Stellar-PRD-and-Build-Plan.pdf` (Nov 4, 2026).
 
 This repo (billsteady-web) owns Phase 0's frontend. Backend work (Phase 0.4+,
-1, 2) lives in [billsteady-backend](https://github.com/bytescape30/billsteady-backend).
-Contract work (Phase 3) lives in [billsteady-contracts](https://github.com/bytescape30/billsteady-contracts).
+1, 2) lives in [billsteady-backend](https://github.com/BillSteady/billsteady-backend).
+Contract work (Phase 3) lives in [billsteady-contracts](https://github.com/BillSteady/billsteady-contracts).
 
 ## Phase 0 — real app (frontend half: done, feature-complete)
 - React + Vite + TS + Tailwind PWA, installable with real icons

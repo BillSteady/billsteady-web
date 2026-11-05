@@ -35,8 +35,8 @@ blocked on external accounts versus what's just not built yet.
 
 ## Related repos
 
-- [billsteady-backend](https://github.com/bytescape30/billsteady-backend) — Supabase backend (Postgres, Auth, Edge Functions)
-- [billsteady-contracts](https://github.com/bytescape30/billsteady-contracts) — the Soroban jar smart contract
+- [billsteady-backend](https://github.com/BillSteady/billsteady-backend) — Supabase backend (Postgres, Auth, Edge Functions)
+- [billsteady-contracts](https://github.com/BillSteady/billsteady-contracts) — the Soroban jar smart contract
 
 ## Development
 
