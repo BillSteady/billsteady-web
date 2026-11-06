@@ -27,8 +27,26 @@ three screens are built, tested, and have had a real design pass:
   silently reported "tomorrow" for part of the day in any timezone west of
   UTC — this fed directly into shortfall and daily-set-aside math
 
-30 Vitest tests passing. State is still local-storage only; there is no
-backend or account sync yet (see billsteady-backend).
+30 Vitest tests passing, plus a real Playwright E2E suite covering the
+add-bill and edit-bill flows end to end (type, submit, see it land in the
+Bills list and the Planner projection) — see "E2E stability" below for why
+this exists. State is still local-storage only; there is no backend or
+account sync yet (see billsteady-backend).
+
+### E2E stability
+
+An earlier verification pass found that automated browser testing stalled
+indefinitely trying to locate the Amount field. Root cause: that field (and
+the bill-name field) used `placeholder` text with no `<label>` — Chromium
+derives an accessible name from `placeholder` for text inputs but not for
+`type="number"` (role `spinbutton`) inputs, so the field was genuinely
+unnamed in the accessibility tree, not just awkward for automation. That's
+also a real accessibility bug on its own (placeholder-as-label is a known
+anti-pattern: it vanishes once the user starts typing). Fixed by giving both
+fields proper `<label>` elements, matching every other field in the form.
+A Playwright suite (`pnpm test:e2e`) now exercises the real flow — confirmed
+the fix live, confirmed via Chromium's own accessibility tree, not just
+"tests pass."
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the full build plan and what's
 blocked on external accounts versus what's just not built yet.
@@ -43,7 +61,8 @@ blocked on external accounts versus what's just not built yet.
 ```bash
 pnpm install
 pnpm dev        # start the dev server
-pnpm test       # run the test suite
+pnpm test       # run the unit test suite (Vitest)
+pnpm test:e2e   # run the browser end-to-end suite (Playwright, uses system Chrome)
 pnpm lint       # eslint
 pnpm typecheck  # tsc
 pnpm build      # production build

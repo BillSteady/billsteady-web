@@ -81,20 +81,26 @@ function BillFormFields({
 }) {
   return (
     <div className="space-y-3">
-      <input
-        className="w-full rounded-lg border border-gray-200 p-2.5"
-        placeholder="e.g. Rent"
-        value={draft.name}
-        onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-      />
-      <input
-        type="number"
-        min={0}
-        className="w-full rounded-lg border border-gray-200 p-2.5"
-        placeholder="Amount (₦)"
-        value={draft.amount}
-        onChange={(e) => setDraft((d) => ({ ...d, amount: e.target.value }))}
-      />
+      <label className="block text-sm text-gray-600">
+        Bill name
+        <input
+          className="mt-1 w-full rounded-lg border border-gray-200 p-2.5"
+          placeholder="e.g. Rent"
+          value={draft.name}
+          onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+        />
+      </label>
+      <label className="block text-sm text-gray-600">
+        Amount (₦)
+        <input
+          type="number"
+          min={0}
+          className="mt-1 w-full rounded-lg border border-gray-200 p-2.5"
+          placeholder="0"
+          value={draft.amount}
+          onChange={(e) => setDraft((d) => ({ ...d, amount: e.target.value }))}
+        />
+      </label>
       <RecurrenceToggle
         value={draft.recurrence}
         onChange={(recurrence) => setDraft((d) => ({ ...d, recurrence }))}
