@@ -18,8 +18,11 @@ export default function App() {
   const [state, setState] = usePlannerState();
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col">
-      <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-gray-100 bg-white/95 p-4 backdrop-blur">
+    <div className="min-h-dvh-fallback mx-auto flex max-w-md flex-col">
+      <header
+        className="sticky top-0 z-10 flex items-center gap-2 border-b border-gray-100 bg-white/95 p-4 backdrop-blur"
+        style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
+      >
         <JarMark />
         <div>
           <h1 className="text-lg font-bold leading-tight text-brand-700">BillSteady</h1>
@@ -33,7 +36,10 @@ export default function App() {
         {tab === "ask" && <AskForTimeScreen state={state} onNavigate={setTab} />}
       </main>
 
-      <nav className="sticky bottom-0 flex border-t border-gray-100 bg-white/95 p-1.5 backdrop-blur">
+      <nav
+        className="sticky bottom-0 flex border-t border-gray-100 bg-white/95 p-1.5 backdrop-blur"
+        style={{ paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))" }}
+      >
         {TABS.map(({ id, label, Icon }) => {
           const active = tab === id;
           return (
