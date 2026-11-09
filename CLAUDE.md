@@ -41,7 +41,8 @@ amber accent, warm cream background, large radii, soft colored shadows.
 ## Stack
 - React + Vite + TypeScript PWA, Tailwind v3
 - `@stellar/stellar-sdk`, Stellar Wallets Kit (JSR, mapped via `.npmrc`)
-- Vitest for unit tests; Playwright wired up but no current spec (see README)
+- Vitest for unit tests; Playwright for E2E (`e2e/pay-bill.spec.ts`, 4 tests,
+  see README's "End-to-end tests" section for what's real vs. mocked)
 
 ## Commands
 - pnpm install | pnpm dev | pnpm build | pnpm test | pnpm lint | pnpm typecheck
@@ -61,8 +62,16 @@ amber accent, warm cream background, large radii, soft colored shadows.
 - Plan first, write a failing test, implement, run typecheck + tests, show output, commit.
 
 ## Current phase
-Rebuilt for the pivot (this commit). Builds against a specified interface
-for billsteady-backend and billsteady-contracts, both being built in
-parallel — see README.md's "Not verified" section for exactly what's a
-placeholder pending those repos, and reconcile before trusting any of it
-end to end.
+Rebuilt for the pivot. Builds against a specified interface for
+billsteady-backend and billsteady-contracts, both built in parallel — see
+README.md's "Not verified" section for exactly what's a placeholder
+pending those repos, and reconcile before trusting any of it end to end.
+
+A real E2E suite now exists (`pnpm test:e2e`, 4/4 passing) and caught two
+real bugs along the way: `sep10.ts`'s `requestChallenge` crashed on the
+default empty `VITE_API_BASE_URL` (`new URL()` with no base), and nothing
+caught a SEP-10 failure after a successful wallet connect, leaving users
+stuck with no visible error. Both fixed — see README.md for detail. This
+is the concrete lesson: unit tests mocked every one of these functions, so
+none of them ever caught either bug. Don't treat "unit tests pass" as
+"the flow works" for anything that chains multiple async steps together.

@@ -10,7 +10,43 @@ import { useCallback, useState } from "react";
  * loads once the user actually taps "Connect wallet", not on every page
  * view before they've decided to connect anything.
  */
-async function loadKit() {
+/** The subset of the real kit's API this app actually uses - real or mocked. */
+interface WalletKitLike {
+  authModal: () => Promise<{ address: string }>;
+  disconnect: () => Promise<void>;
+  signTransaction: (xdr: string) => Promise<{ signedTxXdr: string }>;
+}
+
+/**
+ * Test-only mock, gated behind VITE_E2E_MOCK (only ever set by
+ * playwright.config.ts's webServer env - never in a real build, dev, or
+ * prod environment, so this branch is dead code and tree-shaken away
+ * everywhere else). There is no real wallet browser extension in CI or
+ * this sandboxed environment to drive for real, so E2E tests configure
+ * this mock's behavior via `window.__E2E__` (set per-test with
+ * page.addInitScript before navigation) instead.
+ */
+function loadMockKit(): Promise<WalletKitLike> {
+  return Promise.resolve({
+    async authModal() {
+      const cfg = (globalThis as unknown as { __E2E__?: Record<string, string> }).__E2E__ ?? {};
+      if (cfg.connectError) throw new Error(cfg.connectError);
+      return { address: cfg.walletAddress ?? "GA5VFTEXVQ424W3S4CWMLRRTSRBCDLJGRCLPXXKINZUTZSBCZFTWJ2P6" };
+    },
+    async disconnect() {},
+    async signTransaction(xdr: string) {
+      const cfg = (globalThis as unknown as { __E2E__?: Record<string, string> }).__E2E__ ?? {};
+      if (cfg.signError) throw new Error(cfg.signError);
+      return { signedTxXdr: xdr };
+    },
+  });
+}
+
+async function loadKit(): Promise<WalletKitLike> {
+  if (import.meta.env.VITE_E2E_MOCK === "true") {
+    return loadMockKit();
+  }
+
   const [{ Networks, StellarWalletsKit }, { FreighterModule }, { LobstrModule }, { xBullModule }, { AlbedoModule }, { RabetModule }] =
     await Promise.all([
       import("@jsr/creit-tech__stellar-wallets-kit"),

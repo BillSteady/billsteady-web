@@ -33,7 +33,13 @@ interface ChallengeResponse {
 }
 
 export async function requestChallenge(account: string): Promise<ChallengeResponse> {
-  const url = new URL(`${API_BASE}/auth`);
+  // `new URL(relativePath)` throws ("Invalid URL") without a base - unlike
+  // fetch(), which resolves a relative path against the document
+  // automatically. API_BASE defaults to "" (relative), so this needs an
+  // explicit base to not crash in that default configuration - caught by
+  // actually running this flow end to end, not by any unit test (which
+  // mocked requestChallenge entirely rather than exercising this line).
+  const url = new URL(`${API_BASE}/auth`, window.location.origin);
   url.searchParams.set("account", account);
   url.searchParams.set("home_domain", HOME_DOMAIN);
 

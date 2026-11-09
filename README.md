@@ -32,14 +32,36 @@ reasoning. The old planner UI (PlannerScreen/BillsScreen/AskForTimeScreen,
   dynamic-imported kit.
 
 **Genuinely verified:** 23/23 Vitest tests, clean typecheck/lint, clean
-production build, smoke-tested (`vite preview` + curl) that the built app
-serves correctly.
+production build, 4/4 Playwright E2E tests (see "End-to-end tests" below),
+smoke-tested (`vite preview` + curl) that the built app serves correctly.
+
+**Two real bugs were found and fixed while building the E2E suite — not
+hypothetical, both would have shipped silently:**
+1. `src/lib/sep10.ts`'s `requestChallenge` did `new URL(relativePath)` with
+   no base, which throws in this app's default `VITE_API_BASE_URL=""`
+   config. Every unit test mocked `requestChallenge` entirely, so none of
+   them ever executed this line. Fixed by passing `window.location.origin`
+   as the base.
+2. Nothing caught a failure in any SEP-10 step after a successful wallet
+   connect (the challenge request, `validateChallenge`'s real
+   cryptographic checks, signing, the token exchange). A failure there —
+   which will happen in production for ordinary reasons: a network
+   hiccup, a misconfigured server key, a malformed challenge — left the
+   user stuck on the connect screen with no visible error and an
+   unhandled promise rejection in the console. `src/lib/useAuth.ts` now
+   wraps the whole `signIn` flow in a try/catch with its own error state,
+   not just `wallet.ts`'s connect-specific one.
+
+Both were caught by the E2E suite asserting no uncaught page error
+occurred during each flow, not by any unit test — see the comment at the
+top of `e2e/pay-bill.spec.ts`.
 
 **Not verified, stated plainly:**
-- No real wallet extension in this environment to click through the actual
-  connect → sign-challenge → sign-payment flow end to end. Wallet signing
-  is mocked in anything unit-tested; the live flow needs a human with
-  Freighter/Lobstr/etc. installed.
+- No real wallet browser extension in this environment to click through
+  the actual connect → sign-challenge → sign-payment flow with a real
+  Freighter/Lobstr/etc. The E2E suite proves the UI's state machine and
+  API-calling logic work correctly through a test-only mock seam (see
+  below) — it does not prove a real wallet extension behaves the same way.
 - The backend this app talks to (`billsteady-backend`) and the contract it
   calls (`billsteady-contracts`' `router/`) were being built in parallel by
   separate work and may not exist yet, or may not exactly match the
@@ -79,10 +101,45 @@ pnpm typecheck  # tsc
 pnpm build      # production build
 ```
 
-`pnpm test:e2e` (Playwright) is wired up but has no spec file right now —
-the old one tested a flow that no longer exists, and a meaningful spec for
-the new flow needs a mocked wallet-extension harness that wasn't built in
-this pass.
+## End-to-end tests
+
+`pnpm test:e2e` runs 4 real Playwright tests against a built + previewed
+app: the full connect → balances → pick a bill → verify → confirm → sign &
+pay → history flow, a bill-verification failure, a wallet-connect failure,
+and a SEP-10 challenge that fails real validation — each asserting the UI
+shows something honest and that no uncaught page error occurred (see the
+two bugs above, both caught exactly this way).
+
+**What's real vs. mocked**, since there's no real wallet extension or live
+backend in this environment:
+- **Real**: `src/lib/sep10.ts`'s `validateChallenge` runs its actual
+  cryptographic/structural checks against a genuinely signed challenge
+  transaction built in `e2e/fixtures/sep10Challenge.ts` (using a fixed,
+  published, test-only keypair in `e2e/fixtures/testServerKeypair.ts` —
+  never funded, never meaningful outside this fixture). The UI's full
+  state machine runs for real: every screen transition, every API call's
+  arguments, every error path.
+- **Mocked via a test-only code seam**: `src/lib/wallet.ts`'s wallet kit
+  and `src/lib/payment.ts`'s `payBill` each have a branch gated behind
+  `VITE_E2E_MOCK === "true"` (only ever set by `playwright.config.ts`'s
+  `webServer.env` — dead code in any real build, dev, or prod
+  environment). The wallet mock reads test-configured behavior from
+  `window.__E2E__`, set per-test via `page.addInitScript`. The payment
+  mock deliberately does NOT try to fake Soroban RPC's JSON-RPC traffic —
+  that's `billsteady-contracts`' own job, already proven on testnet there
+  (see that repo). It still calls the real `signTransaction` callback, so
+  the UI → wallet wiring is genuinely exercised.
+- **Mocked via network interception**: the backend API
+  (`src/lib/api.ts`'s endpoints), Horizon account balances, and
+  CoinGecko's rate lookup are all mocked with `page.route`, since the real
+  services either don't exist yet (`billsteady-backend` isn't deployed)
+  or would make the suite flaky/slow for no good reason (CoinGecko,
+  Horizon).
+
+**What this does not prove**: that a real wallet browser extension, the
+real deployed `billsteady-backend`, or the real `billsteady-contracts`
+router behave the same way as these mocks assume. Reconcile against those
+repos' real interfaces before trusting this end to end.
 
 ## License
 
