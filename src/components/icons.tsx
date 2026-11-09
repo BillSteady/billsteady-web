@@ -3,19 +3,18 @@
 
 type IconProps = { className?: string };
 
-export function JarMark({ className = "h-7 w-7" }: IconProps) {
+export function BrandMark({ className = "h-7 w-7" }: IconProps) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="#0f766e" />
-      <path
-        d="M13.5 10.5h5a1.5 1.5 0 0 1 1.5 1.5v.3a3 3 0 0 1 2 2.8v7.4a3 3 0 0 1-3 3h-6a3 3 0 0 1-3-3v-7.4a3 3 0 0 1 2-2.8V12a1.5 1.5 0 0 1 1.5-1.5Z"
-        fill="white"
-      />
+      <rect x="1" y="1" width="30" height="30" rx="8" fill="#0d9488" />
+      <text x="16" y="23" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="800" textAnchor="middle" fill="white">
+        B
+      </text>
     </svg>
   );
 }
 
-export function PlannerIcon({ className = "h-5 w-5" }: IconProps) {
+export function WalletIcon({ className = "h-5 w-5" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -27,12 +26,14 @@ export function PlannerIcon({ className = "h-5 w-5" }: IconProps) {
       className={className}
       aria-hidden="true"
     >
-      <path d="M4 19V10M10 19V5M16 19v-6M22 19H2" />
+      <rect x="2.5" y="6" width="19" height="13" rx="2.5" />
+      <path d="M2.5 10h19" />
+      <circle cx="16.5" cy="14.5" r="1.3" fill="currentColor" stroke="none" />
     </svg>
   );
 }
 
-export function BillsIcon({ className = "h-5 w-5" }: IconProps) {
+export function PayIcon({ className = "h-5 w-5" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -44,13 +45,14 @@ export function BillsIcon({ className = "h-5 w-5" }: IconProps) {
       className={className}
       aria-hidden="true"
     >
-      <rect x="4" y="3" width="16" height="18" rx="2" />
-      <path d="M8 8h8M8 12h8M8 16h5" />
+      <path d="M3 12h14" />
+      <path d="M12 6l6 6-6 6" />
+      <path d="M21 4v16" strokeDasharray="1 4" />
     </svg>
   );
 }
 
-export function AskIcon({ className = "h-5 w-5" }: IconProps) {
+export function HistoryIcon({ className = "h-5 w-5" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -62,7 +64,9 @@ export function AskIcon({ className = "h-5 w-5" }: IconProps) {
       className={className}
       aria-hidden="true"
     >
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" />
+      <circle cx="12" cy="13" r="8" />
+      <path d="M12 9v4l3 2" />
+      <path d="M9 2h6" />
     </svg>
   );
 }
@@ -85,7 +89,7 @@ export function WarningIcon({ className = "h-5 w-5" }: IconProps) {
   );
 }
 
-export function PencilIcon({ className = "h-4 w-4" }: IconProps) {
+export function LockIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -97,26 +101,8 @@ export function PencilIcon({ className = "h-4 w-4" }: IconProps) {
       className={className}
       aria-hidden="true"
     >
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-    </svg>
-  );
-}
-
-export function EmptyJarIllustration({ className = "h-16 w-16" }: IconProps) {
-  return (
-    <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
-      <circle cx="32" cy="32" r="32" fill="#f0fdfa" />
-      <path
-        d="M25 24h14a2 2 0 0 1 2 2v.6a5 5 0 0 1 3 4.6v14a5 5 0 0 1-5 5H25a5 5 0 0 1-5-5v-14a5 5 0 0 1 3-4.6V26a2 2 0 0 1 2-2Z"
-        fill="#99f6e4"
-      />
-      <path
-        d="M25 24h14a2 2 0 0 1 2 2v.6a5 5 0 0 1 3 4.6v14a5 5 0 0 1-5 5H25a5 5 0 0 1-5-5v-14a5 5 0 0 1 3-4.6V26a2 2 0 0 1 2-2Z"
-        stroke="#0f766e"
-        strokeWidth="1.5"
-        fill="none"
-      />
+      <rect x="4" y="11" width="16" height="9" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   );
 }

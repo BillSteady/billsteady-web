@@ -1,72 +1,88 @@
 # BillSteady Web
 
-Helping people who are short on cash pay every bill on time: plan ahead,
-save small amounts daily into bill "jars", and pay billers from those jars.
-Launching in Nigeria, then Kenya and Ghana.
+Pay real Nigerian bills (electricity, airtime, data, cable, school fees)
+straight from your Stellar wallet, in XLM or USDC. Non-custodial, always —
+BillSteady never holds your funds; every payment is signed by your own
+wallet and moves directly to the biller.
 
-This is the planner web app — a React + Vite + TypeScript PWA. It is free,
-works without any crypto, and never holds user funds.
+## Status (as of 2026-11-08)
 
-## Status
+This repo pivoted from a naira-only "no crypto" bill planner to this
+non-custodial Stellar/stablecoin bill-pay app — see CLAUDE.md for the full
+reasoning. The old planner UI (PlannerScreen/BillsScreen/AskForTimeScreen,
+`planner.ts`) has been removed entirely, not extended.
 
-**Phase 0** of 7, frontend feature-complete. The planner engine
-(running-balance projection, shortfall warnings, daily set-aside) and all
-three screens are built, tested, and have had a real design pass:
+**Built:**
+- Wallet connect via Stellar Wallets Kit (Freighter, Lobstr, xBull, Albedo,
+  Rabet — hand-picked, not the kit's full default set; see `src/lib/wallet.ts`
+  for why) and SEP-10 Web Authentication (client side) against a backend
+  that's being built in parallel.
+- Three screens: **Wallet** (real XLM/USDC balances via Horizon), **Pay a
+  bill** (verify → see the naira amount and live XLM/USDC equivalent → sign
+  & pay, invoking `billsteady-contracts`' `BillPaymentRouter.pay()`),
+  **History** (past payments).
+- Live, working XLM/USDC → NGN rates from CoinGecko's free public API
+  (verified reachable, not a placeholder).
+- Code-split so the initial bundle (before connecting a wallet) stays
+  **49.21KB gzip** — under this product's 200KB first-load budget. The
+  heavy pieces (`@stellar/stellar-sdk`, the wallet connector SDKs) only
+  load once the user taps "Connect wallet," not before. This needed real
+  restructuring, not just hoping Vite would tree-shake it away — see
+  `src/App.tsx`'s `lazy()` screen imports and `src/lib/wallet.ts`'s
+  dynamic-imported kit.
 
-- Monthly **and** one-off bills (a date picker for the latter)
-- Recording and editing a partial payment already saved toward a bill
-- Editing an existing bill in place, not just add/remove
-- Installable PWA with real icons (192/512/maskable + favicons)
-- A design pass: clear visual hierarchy for the shortfall warning (the
-  moment that matters most), a real empty state with a call to action,
-  tabular-nums on every money figure so columns of numbers actually align,
-  and cheap press-state feedback on buttons — all pure CSS, no new
-  dependencies
-- Fixed a real bug found during this pass: `todayIso()` now reads the
-  viewer's local calendar date instead of `toISOString()`'s UTC date, which
-  silently reported "tomorrow" for part of the day in any timezone west of
-  UTC — this fed directly into shortfall and daily-set-aside math
+**Genuinely verified:** 23/23 Vitest tests, clean typecheck/lint, clean
+production build, smoke-tested (`vite preview` + curl) that the built app
+serves correctly.
 
-30 Vitest tests passing, plus a real Playwright E2E suite covering the
-add-bill and edit-bill flows end to end (type, submit, see it land in the
-Bills list and the Planner projection) — see "E2E stability" below for why
-this exists. State is still local-storage only; there is no backend or
-account sync yet (see billsteady-backend).
-
-### E2E stability
-
-An earlier verification pass found that automated browser testing stalled
-indefinitely trying to locate the Amount field. Root cause: that field (and
-the bill-name field) used `placeholder` text with no `<label>` — Chromium
-derives an accessible name from `placeholder` for text inputs but not for
-`type="number"` (role `spinbutton`) inputs, so the field was genuinely
-unnamed in the accessibility tree, not just awkward for automation. That's
-also a real accessibility bug on its own (placeholder-as-label is a known
-anti-pattern: it vanishes once the user starts typing). Fixed by giving both
-fields proper `<label>` elements, matching every other field in the form.
-A Playwright suite (`pnpm test:e2e`) now exercises the real flow — confirmed
-the fix live, confirmed via Chromium's own accessibility tree, not just
-"tests pass."
-
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the full build plan and what's
-blocked on external accounts versus what's just not built yet.
+**Not verified, stated plainly:**
+- No real wallet extension in this environment to click through the actual
+  connect → sign-challenge → sign-payment flow end to end. Wallet signing
+  is mocked in anything unit-tested; the live flow needs a human with
+  Freighter/Lobstr/etc. installed.
+- The backend this app talks to (`billsteady-backend`) and the contract it
+  calls (`billsteady-contracts`' `router/`) were being built in parallel by
+  separate work and may not exist yet, or may not exactly match the
+  interface assumed here. Placeholders, clearly marked `TODO`, pending
+  reconciliation:
+  - `VITE_API_BASE_URL`, and the endpoint paths in `src/lib/api.ts`
+    (`/auth`, `/bills/verify`, `/payment-orders`, …) — reasonable
+    REST-ish defaults, not a confirmed contract.
+  - `VITE_ROUTER_CONTRACT_ID`, `VITE_USDC_ISSUER` — empty until
+    `billsteady-contracts/router/README.md` publishes real addresses.
+  - `order_ref` format (`src/lib/orderRef.ts`): 32 random bytes, generated
+    client-side, sent to the backend with the quote, hex-encoded for
+    transport. A reasonable default, not confirmed against the backend.
+  - `VITE_SEP10_SERVER_SIGNING_KEY`: this app pins the expected server
+    signing key via env var rather than fetching it from a
+    `<home-domain>/.well-known/stellar.toml` (which the full SEP-10 spec
+    describes) — a deliberate simplification for a backend that's a
+    Supabase Edge Function, not a domain hosting its own stellar.toml. The
+    actual security-relevant check (verifying the challenge's signature
+    against a known, trusted key before signing anything) still happens;
+    it's just sourced from config instead of a TOML fetch.
 
 ## Related repos
 
-- [billsteady-backend](https://github.com/BillSteady/billsteady-backend) — Supabase backend (Postgres, Auth, Edge Functions)
-- [billsteady-contracts](https://github.com/BillSteady/billsteady-contracts) — the Soroban jar smart contract
+- [billsteady-backend](https://github.com/BillSteady/billsteady-backend) — Supabase backend
+- [billsteady-contracts](https://github.com/BillSteady/billsteady-contracts) — the `BillPaymentRouter` Soroban contract
+- [billsteady-landing](https://github.com/BillSteady/billsteady-landing) — the public landing page (live, reflects this same pivot)
 
 ## Development
 
 ```bash
 pnpm install
 pnpm dev        # start the dev server
-pnpm test       # run the unit test suite (Vitest)
-pnpm test:e2e   # run the browser end-to-end suite (Playwright, uses system Chrome)
+pnpm test       # unit test suite (Vitest)
 pnpm lint       # eslint
 pnpm typecheck  # tsc
 pnpm build      # production build
 ```
+
+`pnpm test:e2e` (Playwright) is wired up but has no spec file right now —
+the old one tested a flow that no longer exists, and a meaningful spec for
+the new flow needs a mocked wallet-extension harness that wasn't built in
+this pass.
 
 ## License
 

@@ -11,9 +11,9 @@ export default defineConfig({
       manifest: {
         name: "BillSteady",
         short_name: "BillSteady",
-        description: "Plan ahead, save daily, pay every bill on time.",
+        description: "Pay Nigerian bills with XLM or USDC — non-custodial, straight from your wallet.",
         theme_color: "#0f766e",
-        background_color: "#ffffff",
+        background_color: "#fffbf2",
         display: "standalone",
         icons: [
           { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },

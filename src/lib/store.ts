@@ -1,23 +1,18 @@
 import { useEffect, useState } from "react";
-import type { Bill, PaydayRule } from "./planner";
 
-export interface PlannerState {
-  cashOnHandKobo: number;
-  incomeKobo: number;
-  paydayRule: PaydayRule;
-  bills: Bill[];
+export interface SessionState {
+  address: string | null;
+  sep10Token: string | null;
 }
 
-const STORAGE_KEY = "billsteady.planner.v1";
+const STORAGE_KEY = "billsteady.session.v1";
 
-export const defaultState: PlannerState = {
-  cashOnHandKobo: 0,
-  incomeKobo: 0,
-  paydayRule: { type: "monthly", dayOfMonth: 28 },
-  bills: [],
+const defaultState: SessionState = {
+  address: null,
+  sep10Token: null,
 };
 
-function load(): PlannerState {
+function load(): SessionState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState;
@@ -27,17 +22,23 @@ function load(): PlannerState {
   }
 }
 
-function save(state: PlannerState) {
+function save(state: SessionState) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
-    // Storage unavailable (private browsing, quota) - state stays in memory for this session.
+    // Storage unavailable (private browsing, quota) - session stays in memory for this tab.
   }
 }
 
-/** Local-only planner state. Phase 0 has no backend; Prompt 0.5 (sync) replaces this with Supabase. */
-export function usePlannerState() {
-  const [state, setState] = useState<PlannerState>(load);
+/**
+ * Persists only the connected wallet address and SEP-10 session token -
+ * never a private key or seed (the wallet extension holds those, never
+ * this app). Re-authenticating still requires a fresh wallet signature
+ * once the JWT expires; this just avoids re-prompting "connect wallet" on
+ * every page reload.
+ */
+export function useSessionState() {
+  const [state, setState] = useState<SessionState>(load);
 
   useEffect(() => {
     save(state);
