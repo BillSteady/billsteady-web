@@ -11,7 +11,7 @@ import { useCallback, useState } from "react";
  * view before they've decided to connect anything.
  */
 /** The subset of the real kit's API this app actually uses - real or mocked. */
-interface WalletKitLike {
+export interface WalletKitLike {
   authModal: () => Promise<{ address: string }>;
   disconnect: () => Promise<void>;
   signTransaction: (xdr: string) => Promise<{ signedTxXdr: string }>;
@@ -27,16 +27,20 @@ interface WalletKitLike {
  * page.addInitScript before navigation) instead.
  */
 function loadMockKit(): Promise<WalletKitLike> {
+  const cfg = (globalThis as unknown as { __E2E__?: Record<string, string> }).__E2E__ ?? {};
+  if (cfg.kitLoadError) {
+    return Promise.reject(new Error(cfg.kitLoadError));
+  }
   return Promise.resolve({
     async authModal() {
-      const cfg = (globalThis as unknown as { __E2E__?: Record<string, string> }).__E2E__ ?? {};
-      if (cfg.connectError) throw new Error(cfg.connectError);
-      return { address: cfg.walletAddress ?? "GA5VFTEXVQ424W3S4CWMLRRTSRBCDLJGRCLPXXKINZUTZSBCZFTWJ2P6" };
+      const currentCfg = (globalThis as unknown as { __E2E__?: Record<string, string> }).__E2E__ ?? {};
+      if (currentCfg.connectError) throw new Error(currentCfg.connectError);
+      return { address: currentCfg.walletAddress ?? "GA5VFTEXVQ424W3S4CWMLRRTSRBCDLJGRCLPXXKINZUTZSBCZFTWJ2P6" };
     },
     async disconnect() {},
     async signTransaction(xdr: string) {
-      const cfg = (globalThis as unknown as { __E2E__?: Record<string, string> }).__E2E__ ?? {};
-      if (cfg.signError) throw new Error(cfg.signError);
+      const currentCfg = (globalThis as unknown as { __E2E__?: Record<string, string> }).__E2E__ ?? {};
+      if (currentCfg.signError) throw new Error(currentCfg.signError);
       return { signedTxXdr: xdr };
     },
   });
@@ -67,10 +71,23 @@ async function loadKit(): Promise<WalletKitLike> {
   return StellarWalletsKit;
 }
 
-let kitPromise: ReturnType<typeof loadKit> | null = null;
-function getKit() {
-  if (!kitPromise) kitPromise = loadKit();
+let kitLoader: () => Promise<WalletKitLike> = loadKit;
+let kitPromise: Promise<WalletKitLike> | null = null;
+
+export function getKit(): Promise<WalletKitLike> {
+  if (!kitPromise) {
+    kitPromise = kitLoader().catch((err) => {
+      kitPromise = null;
+      throw err;
+    });
+  }
   return kitPromise;
+}
+
+/** Test-only helper to override the kit loader and reset cached promise state. */
+export function setKitLoaderForTests(loader?: () => Promise<WalletKitLike>): void {
+  kitPromise = null;
+  kitLoader = loader ?? loadKit;
 }
 
 export function useStellarWallet() {
