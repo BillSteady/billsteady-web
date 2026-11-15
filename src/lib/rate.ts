@@ -27,8 +27,18 @@ export async function fetchNgnRates(): Promise<NgnRates> {
   return { xlmToNgn, usdcToNgn };
 }
 
-/** naira amount (integer kobo) -> asset amount needed at the given rate, rounded to 7 decimals (Stellar's precision). */
+/**
+ * Rounding policy: ALWAYS round UP (`Math.ceil`) to the next 7-decimal stroop
+ * (`1e-7`) so that converting a naira bill (in integer kobo) to an on-chain
+ * XLM/USDC amount never underpays the billed amount by a fractional stroop.
+ *
+ * Standard `Math.round` rounds down whenever the fractional stroop is < 0.5,
+ * which can leave an exact-amount utility/VTpass order marginally short. Ceiling
+ * at the 7th decimal place adds at most `< 1 stroop` (`< 0.0000001` XLM/USDC)
+ * while guaranteeing `assetAmount * ngnPerAsset >= ngnKobo / 100`.
+ */
 export function ngnKoboToAsset(ngnKobo: number, ngnPerAsset: number): number {
+  if (ngnKobo <= 0) return 0;
   const naira = ngnKobo / 100;
-  return Math.round((naira / ngnPerAsset) * 1e7) / 1e7;
+  return Math.ceil((naira / ngnPerAsset) * 1e7) / 1e7;
 }
