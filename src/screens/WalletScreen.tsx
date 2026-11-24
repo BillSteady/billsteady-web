@@ -36,14 +36,23 @@ export function WalletScreen({ address, onDisconnect }: { address: string; onDis
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
         {!balances && !error && <p className="mt-2 text-sm text-stone-400">Loading…</p>}
         {balances && (
-          <div className="mt-2 flex items-center justify-between">
-            <span className="text-lg font-extrabold tabular-nums text-brand-700">
-              {balances.xlm.toLocaleString(undefined, { maximumFractionDigits: 2 })} XLM
-            </span>
-            <span className="text-lg font-extrabold tabular-nums text-sunrise-600">
-              {balances.usdc.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC
-            </span>
-          </div>
+          <>
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-lg font-extrabold tabular-nums text-brand-700">
+                {balances.xlm.toLocaleString(undefined, { maximumFractionDigits: 2 })} XLM
+              </span>
+              {balances.usdcTrustline ? (
+                <span className="text-lg font-extrabold tabular-nums text-sunrise-600">
+                  {balances.usdc.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC
+                </span>
+              ) : (
+                <span className="text-sm font-semibold text-sunrise-600">USDC not set up</span>
+              )}
+            </div>
+            {!balances.usdcTrustline && (
+              <p className="mt-2 text-sm text-stone-600">Set up a USDC trustline to use USDC.</p>
+            )}
+          </>
         )}
       </div>
 
