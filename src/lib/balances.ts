@@ -4,6 +4,8 @@ import { horizon, USDC_ISSUER } from "./stellar";
 export interface WalletBalances {
   xlm: number;
   usdc: number;
+  /** False when the account has no USDC trustline and therefore cannot hold or receive USDC. */
+  usdcTrustline: boolean;
 }
 
 /** Reads real balances for a connected account from Horizon. Returns zeros for an unfunded account. */
@@ -22,10 +24,11 @@ export async function fetchBalances(address: string): Promise<WalletBalances> {
     return {
       xlm: xlmBalance ? parseFloat(xlmBalance.balance) : 0,
       usdc: usdcBalance ? parseFloat(usdcBalance.balance) : 0,
+      usdcTrustline: Boolean(usdcBalance),
     };
   } catch (err) {
     if (err instanceof NotFoundError) {
-      return { xlm: 0, usdc: 0 };
+      return { xlm: 0, usdc: 0, usdcTrustline: false };
     }
     throw err;
   }
